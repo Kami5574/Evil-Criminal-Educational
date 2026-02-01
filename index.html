@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LingoLeap</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+  <style>@view-transition { navigation: auto; }</style>
+ </head>
+ <body class="h-full bg-slate-100 overflow-auto">
+  <div id="app-container" class="h-full w-full flex flex-col"><!-- Header -->
+   <header id="main-header" class="bg-white shadow-sm border-b-2 border-slate-200 px-4 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center gap-2">
+     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-green-600 flex items-center justify-center shadow-lg"><span class="text-white text-xl">🦜</span>
+     </div>
+     <h1 id="app-title" class="text-xl font-black text-slate-800">LingoLeap</h1>
+    </div>
+    <div class="flex items-center gap-4"><!-- Streak -->
+     <div class="flex items-center gap-1 bg-orange-50 px-3 py-1.5 rounded-xl"><span class="streak-fire text-xl">🔥</span> <span id="streak-count" class="font-bold text-orange-600">0</span>
+     </div><!-- XP -->
+     <div class="flex items-center gap-1 bg-yellow-50 px-3 py-1.5 rounded-xl"><span class="text-xl">⚡</span> <span id="xp-count" class="font-bold text-yellow-600">0</span>
+     </div><!-- Hearts -->
+     <div class="flex items-center gap-1 bg-red-50 px-3 py-1.5 rounded-xl"><span class="text-xl">❤️</span> <span id="hearts-count" class="font-bold text-red-500">5</span>
+     </div>
+    </div>
+   </header><!-- Main Content Area -->
+   <main id="main-content" class="flex-1 overflow-auto"><!-- Home View -->
+    <div id="home-view" class="p-6 max-w-lg mx-auto"><!-- Daily Goal Card -->
+     <div class="bg-white rounded-2xl p-5 shadow-lg mb-6 border-2 border-slate-100">
+      <div class="flex items-center justify-between mb-3">
+       <h2 class="font-bold text-slate-700">Daily Goal</h2><span class="text-sm text-slate-500">10 XP / 50 XP</span>
+      </div>
+      <div class="h-3 bg-slate-200 rounded-full overflow-hidden">
+       <div id="daily-progress" class="h-full bg-gradient-to-r from-emerald-400 to-green-500 progress-fill rounded-full" style="width: 20%"></div>
+      </div>
+     </div><!-- Learning Path -->
+     <div class="relative">
+      <h2 class="font-bold text-slate-700 mb-4 text-center">Spanish Journey</h2><!-- Path SVG Background -->
+      <svg class="absolute left-1/2 transform -translate-x-1/2 w-4 h-full" style="z-index: 0;"><line x1="8" y1="0" x2="8" y2="100%" stroke="#e2e8f0" stroke-width="4" stroke-dasharray="8 8" />
+      </svg><!-- Lesson Nodes -->
+      <div id="lesson-path" class="relative z-10 flex flex-col items-center gap-6 pb-20"><!-- Lessons will be rendered here -->
+      </div>
+     </div>
+    </div><!-- Lesson View (Hidden by default) -->
+    <div id="lesson-view" class="hidden h-full flex flex-col"><!-- Lesson Header -->
+     <div class="bg-white px-4 py-3 border-b-2 border-slate-200">
+      <div class="flex items-center gap-4 max-w-lg mx-auto"><button id="close-lesson" class="text-slate-400 hover:text-slate-600 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg></button>
+       <div class="flex-1 h-3 bg-slate-200 rounded-full overflow-hidden">
+        <div id="lesson-progress" class="h-full bg-gradient-to-r from-emerald-400 to-green-500 progress-fill rounded-full" style="width: 0%"></div>
+       </div>
+       <div class="flex items-center gap-1"><span>❤️</span> <span id="lesson-hearts" class="font-bold text-red-500">5</span>
+       </div>
+      </div>
+     </div><!-- Question Area -->
+     <div class="flex-1 flex flex-col items-center justify-center p-6">
+      <div id="question-container" class="w-full max-w-lg"><!-- Question content will be rendered here -->
+      </div>
+     </div><!-- Answer Area -->
+     <div class="bg-white border-t-2 border-slate-200 p-4">
+      <div id="answer-container" class="max-w-lg mx-auto"><!-- Answer options will be rendered here -->
+      </div>
+     </div>
+    </div><!-- Lesson Complete View -->
+    <div id="complete-view" class="hidden h-full flex flex-col items-center justify-center p-6 bg-gradient-to-b from-emerald-50 to-white">
+     <div class="text-center bounce-in">
+      <div class="text-8xl mb-6">
+       🎉
+      </div>
+      <h2 class="text-3xl font-black text-slate-800 mb-2">Lesson Complete!</h2>
+      <p class="text-slate-600 mb-8">Great job! Keep up the streak!</p>
+      <div class="flex justify-center gap-6 mb-8">
+       <div class="text-center">
+        <div class="text-4xl font-black text-yellow-500" id="earned-xp">
+         +10
+        </div>
+        <div class="text-sm text-slate-500">
+         XP Earned
+        </div>
+       </div>
+       <div class="text-center">
+        <div class="text-4xl font-black text-emerald-500" id="accuracy-score">
+         100%
+        </div>
+        <div class="text-sm text-slate-500">
+         Accuracy
+        </div>
+       </div>
+      </div><button id="continue-btn" class="bg-gradient-to-r from-emerald-400 to-green-500 text-white font-bold py-4 px-12 rounded-2xl text-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 active:scale-98"> Continue </button>
+     </div>
+    </div>
+   </main><!-- Bottom Navigation -->
+   <nav id="bottom-nav" class="bg-white border-t-2 border-slate-200 px-6 py-3">
+    <div class="flex justify-around max-w-lg mx-auto"><button class="flex flex-col items-center gap-1 text-emerald-500">
+      <svg class="w-7 h-7" fill="currentColor" viewbox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+      </svg><span class="text-xs font-bold">Learn</span> </button> <button class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg><span class="text-xs font-semibold">Leaderboard</span> </button> <button class="flex flex-col items-center gap-1 text-slate-400 hover:text-slate-600 transition-colors">
+      <svg class="w-7 h-7" fill="none" stroke="currentColor" viewbox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+      </svg><span class="text-xs font-semibold">Profile</span> </button>
+    </div>
+   </nav>
+  </div>
+  <script>
+    // Default configuration
+    const defaultConfig = {
+      app_title: 'LingoLeap',
+      streak_label: 'Day streak',
+      xp_label: 'Total XP',
+      background_color: '#f1f5f9',
+      surface_color: '#ffffff',
+      text_color: '#1e293b',
+      primary_action_color: '#10b981',
+      secondary_action_color: '#f59e0b'
+    };
+
+    let config = { ...defaultConfig };
+    let completedLessons = [];
+    let currentStreak = 0;
+    let totalXP = 0;
+    let hearts = 5;
+
+    // Lesson data
+    const lessons = [
+      { id: 'basics-1', title: 'Basics 1', icon: '🏠', unit: 'Basics', questions: [
+        { type: 'translate', prompt: 'Translate: "Hello"', options: ['Hola', 'Adiós', 'Gracias', 'Por favor'], correct: 0 },
+        { type: 'translate', prompt: 'Translate: "Goodbye"', options: ['Hola', 'Adiós', 'Sí', 'No'], correct: 1 },
+        { type: 'translate', prompt: 'Translate: "Thank you"', options: ['De nada', 'Gracias', 'Lo siento', 'Hola'], correct: 1 },
+        { type: 'translate', prompt: 'What does "Buenos días" mean?', options: ['Good night', 'Good morning', 'Goodbye', 'Thank you'], correct: 1 },
+      ]},
+      { id: 'basics-2', title: 'Basics 2', icon: '👋', unit: 'Basics', questions: [
+        { type: 'translate', prompt: 'Translate: "Please"', options: ['Gracias', 'Por favor', 'De nada', 'Hola'], correct: 1 },
+        { type: 'translate', prompt: 'What does "Sí" mean?', options: ['No', 'Yes', 'Maybe', 'Hello'], correct: 1 },
+        { type: 'translate', prompt: 'Translate: "Sorry"', options: ['Gracias', 'Hola', 'Lo siento', 'Adiós'], correct: 2 },
+      ]},
+      { id: 'food-1', title: 'Food 1', icon: '🍎', unit: 'Food', questions: [
+        { type: 'translate', prompt: 'Translate: "Apple"', options: ['Manzana', 'Naranja', 'Plátano', 'Uva'], correct: 0 },
+        { type: 'translate', prompt: 'What does "Agua" mean?', options: ['Fire', 'Water', 'Food', 'Bread'], correct: 1 },
+        { type: 'translate', prompt: 'Translate: "Bread"', options: ['Leche', 'Pan', 'Queso', 'Carne'], correct: 1 },
+      ]},
+      { id: 'food-2', title: 'Food 2', icon: '🍕', unit: 'Food', questions: [
+        { type: 'translate', prompt: 'What does "Leche" mean?', options: ['Milk', 'Juice', 'Water', 'Coffee'], correct: 0 },
+        { type: 'translate', prompt: 'Translate: "Coffee"', options: ['Té', 'Café', 'Jugo', 'Agua'], correct: 1 },
+      ]},
+      { id: 'animals-1', title: 'Animals 1', icon: '🐕', unit: 'Animals', questions: [
+        { type: 'translate', prompt: 'Translate: "Dog"', options: ['Gato', 'Perro', 'Pájaro', 'Pez'], correct: 1 },
+        { type: 'translate', prompt: 'What does "Gato" mean?', options: ['Dog', 'Bird', 'Cat', 'Fish'], correct: 2 },
+      ]},
+      { id: 'animals-2', title: 'Animals 2', icon: '🐱', unit: 'Animals', questions: [
+        { type: 'translate', prompt: 'Translate: "Bird"', options: ['Perro', 'Pez', 'Pájaro', 'Gato'], correct: 2 },
+        { type: 'translate', prompt: 'What does "Caballo" mean?', options: ['Cow', 'Horse', 'Pig', 'Chicken'], correct: 1 },
+      ]},
+    ];
+
+    // Current lesson state
+    let currentLesson = null;
+    let currentQuestionIndex = 0;
+    let lessonHearts = 5;
+    let correctAnswers = 0;
+
+    // Data handler for persistence
+    const dataHandler = {
+      onDataChanged(data) {
+        completedLessons = data;
+        updateStats();
+        renderLessonPath();
+      }
+    };
+
+    function updateStats() {
+      const uniqueDays = new Set(completedLessons.map(l => {
+        const date = new Date(l.completedAt);
+        return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+      }));
+      currentStreak = uniqueDays.size;
+      totalXP = completedLessons.reduce((sum, l) => sum + (l.score || 0), 0);
+      
+      document.getElementById('streak-count').textContent = currentStreak;
+      document.getElementById('xp-count').textContent = totalXP;
+      
+      // Update daily progress (assume 50 XP daily goal)
+      const todayXP = completedLessons.filter(l => {
+        const today = new Date();
+        const lessonDate = new Date(l.completedAt);
+        return lessonDate.toDateString() === today.toDateString();
+      }).reduce((sum, l) => sum + (l.score || 0), 0);
+      
+      const progress = Math.min((todayXP / 50) * 100, 100);
+      document.getElementById('daily-progress').style.width = `${progress}%`;
+    }
+
+    function renderLessonPath() {
+      const container = document.getElementById('lesson-path');
+      container.innerHTML = '';
+
+      let currentUnit = '';
+      
+      lessons.forEach((lesson, index) => {
+        const isCompleted = completedLessons.some(l => l.lessonId === lesson.id);
+        const isLocked = index > 0 && !completedLessons.some(l => l.lessonId === lessons[index - 1].id);
+        
+        // Unit header
+        if (lesson.unit !== currentUnit) {
+          currentUnit = lesson.unit;
+          const unitHeader = document.createElement('div');
+          unitHeader.className = 'w-full bg-white rounded-2xl p-4 shadow-md mb-2 text-center';
+          unitHeader.innerHTML = `
+            <h3 class="font-bold text-lg" style="color: ${config.text_color}">${lesson.unit}</h3>
+          `;
+          container.appendChild(unitHeader);
+        }
+
+        // Lesson node
+        const node = document.createElement('button');
+        node.className = `lesson-node w-20 h-20 rounded-full flex items-center justify-center text-3xl shadow-lg transition-all ${
+          isLocked ? 'bg-slate-300 cursor-not-allowed opacity-60' : 
+          isCompleted ? 'bg-gradient-to-br from-yellow-400 to-amber-500' : 
+          'bg-gradient-to-br from-emerald-400 to-green-500 pulse'
+        }`;
+        
+        if (isCompleted) {
+          node.innerHTML = `<span class="relative">${lesson.icon}<span class="absolute -bottom-1 -right-1 text-lg">✓</span></span>`;
+        } else if (isLocked) {
+          node.innerHTML = '🔒';
+        } else {
+          node.innerHTML = lesson.icon;
+        }
+
+        if (!isLocked) {
+          node.onclick = () => startLesson(lesson);
+        }
+
+        // Zigzag positioning
+        const offset = index % 2 === 0 ? '-30px' : '30px';
+        node.style.marginLeft = offset;
+
+        container.appendChild(node);
+
+        // Lesson title
+        const title = document.createElement('div');
+        title.className = 'text-sm font-semibold text-slate-600 mt-1 text-center';
+        title.style.marginLeft = offset;
+        title.textContent = lesson.title;
+        container.appendChild(title);
+      });
+    }
+
+    function startLesson(lesson) {
+      currentLesson = lesson;
+      currentQuestionIndex = 0;
+      lessonHearts = 5;
+      correctAnswers = 0;
+
+      document.getElementById('home-view').classList.add('hidden');
+      document.getElementById('bottom-nav').classList.add('hidden');
+      document.getElementById('lesson-view').classList.remove('hidden');
+      document.getElementById('complete-view').classList.add('hidden');
+
+      updateLessonProgress();
+      renderQuestion();
+    }
+
+    function updateLessonProgress() {
+      const progress = (currentQuestionIndex / currentLesson.questions.length) * 100;
+      document.getElementById('lesson-progress').style.width = `${progress}%`;
+      document.getElementById('lesson-hearts').textContent = lessonHearts;
+    }
+
+    function renderQuestion() {
+      const question = currentLesson.questions[currentQuestionIndex];
+      const questionContainer = document.getElementById('question-container');
+      const answerContainer = document.getElementById('answer-container');
+
+      questionContainer.innerHTML = `
+        <div class="text-center bounce-in">
+          <p class="text-sm font-semibold text-emerald-600 mb-2 uppercase tracking-wide">Translate this phrase</p>
+          <h2 class="text-2xl font-black" style="color: ${config.text_color}">${question.prompt}</h2>
+        </div>
+      `;
+
+      answerContainer.innerHTML = `
+        <div class="grid grid-cols-2 gap-3">
+          ${question.options.map((option, i) => `
+            <button onclick="selectAnswer(${i})" class="answer-btn p-4 rounded-xl border-2 border-slate-200 bg-white font-semibold text-lg hover:border-emerald-400 hover:bg-emerald-50 transition-all active:scale-95" style="color: ${config.text_color}">
+              ${option}
+            </button>
+          `).join('')}
+        </div>
+        <div id="feedback-area" class="mt-4 hidden"></div>
+      `;
+    }
+
+    function selectAnswer(index) {
+      const question = currentLesson.questions[currentQuestionIndex];
+      const isCorrect = index === question.correct;
+      const buttons = document.querySelectorAll('.answer-btn');
+      const feedbackArea = document.getElementById('feedback-area');
+
+      // Disable all buttons
+      buttons.forEach((btn, i) => {
+        btn.disabled = true;
+        if (i === question.correct) {
+          btn.classList.add('border-emerald-500', 'bg-emerald-100');
+        } else if (i === index && !isCorrect) {
+          btn.classList.add('border-red-500', 'bg-red-100');
+        }
+      });
+
+      if (isCorrect) {
+        correctAnswers++;
+        feedbackArea.innerHTML = `
+          <div class="bg-emerald-100 border-2 border-emerald-400 rounded-xl p-4 text-center correct-shake">
+            <span class="text-2xl">🎉</span>
+            <p class="font-bold text-emerald-700">Correct!</p>
+          </div>
+        `;
+      } else {
+        lessonHearts--;
+        document.getElementById('lesson-hearts').textContent = lessonHearts;
+        feedbackArea.innerHTML = `
+          <div class="bg-red-100 border-2 border-red-400 rounded-xl p-4 text-center">
+            <span class="text-2xl">😅</span>
+            <p class="font-bold text-red-700">Oops! The correct answer was: ${question.options[question.correct]}</p>
+          </div>
+        `;
+      }
+
+      feedbackArea.classList.remove('hidden');
+
+      // Continue to next question after delay
+      setTimeout(() => {
+        if (lessonHearts <= 0) {
+          endLesson(false);
+        } else {
+          currentQuestionIndex++;
+          if (currentQuestionIndex >= currentLesson.questions.length) {
+            endLesson(true);
+          } else {
+            updateLessonProgress();
+            renderQuestion();
+          }
+        }
+      }, 1500);
+    }
+
+    async function endLesson(completed) {
+      const xpEarned = completed ? correctAnswers * 10 : 0;
+      const accuracy = Math.round((correctAnswers / currentLesson.questions.length) * 100);
+
+      document.getElementById('lesson-view').classList.add('hidden');
+      document.getElementById('complete-view').classList.remove('hidden');
+      document.getElementById('earned-xp').textContent = `+${xpEarned}`;
+      document.getElementById('accuracy-score').textContent = `${accuracy}%`;
+
+      if (completed && window.dataSdk) {
+        const existing = completedLessons.find(l => l.lessonId === currentLesson.id);
+        if (!existing) {
+          if (completedLessons.length >= 999) {
+            console.error('Maximum lesson limit reached');
+            return;
+          }
+          const result = await window.dataSdk.create({
+            lessonId: currentLesson.id,
+            completed: true,
+            score: xpEarned,
+            completedAt: new Date().toISOString()
+          });
+          if (!result.isOk) {
+            console.error('Failed to save lesson progress');
+          }
+        }
+      }
+    }
+
+    function closeLesson() {
+      document.getElementById('lesson-view').classList.add('hidden');
+      document.getElementById('complete-view').classList.add('hidden');
+      document.getElementById('home-view').classList.remove('hidden');
+      document.getElementById('bottom-nav').classList.remove('hidden');
+      currentLesson = null;
+    }
+
+    function continueFromComplete() {
+      closeLesson();
+    }
+
+    // Apply config to UI
+    async function onConfigChange(cfg) {
+      config = { ...defaultConfig, ...cfg };
+      
+      // Apply colors
+      document.body.style.backgroundColor = config.background_color;
+      document.getElementById('main-header').style.backgroundColor = config.surface_color;
+      document.getElementById('bottom-nav').style.backgroundColor = config.surface_color;
+      
+      // Apply text
+      document.getElementById('app-title').textContent = config.app_title;
+      document.getElementById('app-title').style.color = config.text_color;
+      
+      // Update all surface elements
+      document.querySelectorAll('.bg-white').forEach(el => {
+        el.style.backgroundColor = config.surface_color;
+      });
+
+      renderLessonPath();
+    }
+
+    function mapToCapabilities(cfg) {
+      return {
+        recolorables: [
+          {
+            get: () => cfg.background_color || defaultConfig.background_color,
+            set: (value) => { cfg.background_color = value; window.elementSdk.setConfig({ background_color: value }); }
+          },
+          {
+            get: () => cfg.surface_color || defaultConfig.surface_color,
+            set: (value) => { cfg.surface_color = value; window.elementSdk.setConfig({ surface_color: value }); }
+          },
+          {
+            get: () => cfg.text_color || defaultConfig.text_color,
+            set: (value) => { cfg.text_color = value; window.elementSdk.setConfig({ text_color: value }); }
+          },
+          {
+            get: () => cfg.primary_action_color || defaultConfig.primary_action_color,
+            set: (value) => { cfg.primary_action_color = value; window.elementSdk.setConfig({ primary_action_color: value }); }
+          },
+          {
+            get: () => cfg.secondary_action_color || defaultConfig.secondary_action_color,
+            set: (value) => { cfg.secondary_action_color = value; window.elementSdk.setConfig({ secondary_action_color: value }); }
+          }
+        ],
+        borderables: [],
+        fontEditable: undefined,
+        fontSizeable: undefined
+      };
+    }
+
+    function mapToEditPanelValues(cfg) {
+      return new Map([
+        ['app_title', cfg.app_title || defaultConfig.app_title],
+        ['streak_label', cfg.streak_label || defaultConfig.streak_label],
+        ['xp_label', cfg.xp_label || defaultConfig.xp_label]
+      ]);
+    }
+
+    // Event listeners
+    document.getElementById('close-lesson').addEventListener('click', closeLesson);
+    document.getElementById('continue-btn').addEventListener('click', continueFromComplete);
+
+    // Initialize
+    async function init() {
+      if (window.elementSdk) {
+        window.elementSdk.init({
+          defaultConfig,
+          onConfigChange,
+          mapToCapabilities,
+          mapToEditPanelValues
+        });
+      }
+
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) {
+          console.error('Failed to initialize data SDK');
+        }
+      }
+
+      renderLessonPath();
+    }
+
+    init();
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9c48e728b57577c5',t:'MTc2OTUyMzc1NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
